@@ -11,7 +11,7 @@ export function CountdownClock({ targetTime }: CountdownClockProps) {
 
   useEffect(() => {
     setTimeLeft(targetTime) // Reset timeLeft when targetTime changes
-    
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1000))
     }, 1000)
@@ -25,7 +25,7 @@ export function CountdownClock({ targetTime }: CountdownClockProps) {
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000)
 
   return (
-    <div className="font-mono text-sm text-slate-400">
+    <div className="font-mono text-4xl text-slate-400 mt-4">
       {String(hours).padStart(2, '0')}:
       {String(minutes).padStart(2, '0')}:
       {String(seconds).padStart(2, '0')}

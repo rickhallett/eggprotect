@@ -47,7 +47,7 @@ const StarChart = () => {
     <div className="min-h-screen bg-zinc-900 p-4">
       <Card className="max-w-md mx-auto bg-zinc-800 text-zinc">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">
+          <CardTitle className="text-center text-2xl font-bold text-slate-400">
             Tick, tock...
           </CardTitle>
         </CardHeader>

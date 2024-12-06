@@ -38,6 +38,10 @@ const interpolateColor = (progress: number) => {
   return `#${resultRGB.r.toString(16).padStart(2, '0')}${resultRGB.g.toString(16).padStart(2, '0')}${resultRGB.b.toString(16).padStart(2, '0')}`
 }
 
+const interpolateStrokeWidth = (progress: number) => {
+  return 1 + (progress / 100) * 2
+}
+
 // Custom hook
 export function useStarStyles(stars: boolean[], lastStarProgress: number) {
   return useMemo(() =>
@@ -46,12 +50,12 @@ export function useStarStyles(stars: boolean[], lastStarProgress: number) {
       const isActive = stars[index]
 
       if (!isActive) {
-        return { fill: INACTIVE_GRAY, stroke: INACTIVE_GRAY }
+        return { fill: INACTIVE_GRAY, stroke: INACTIVE_GRAY, strokeWidth: 0.01 }
       }
 
       if (index === lastActiveIndex) {
         const currentColor = interpolateColor(lastStarProgress)
-        return { fill: currentColor, stroke: currentColor }
+        return { fill: currentColor, stroke: currentColor, strokeWidth: interpolateStrokeWidth(lastStarProgress) }
       }
 
       return { fill: BRIGHT_YELLOW, stroke: BRIGHT_YELLOW }
