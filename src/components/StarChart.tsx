@@ -70,7 +70,7 @@ const StarChart = () => {
 
       return () => clearInterval(timer);
     }
-  }, [stars]);
+  }, [DECAY_TIME, stars]);
 
   const getStarStyle = (index: number) => {
     const lastActiveIndex = stars.lastIndexOf(true);
