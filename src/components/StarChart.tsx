@@ -6,45 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
 import { CountdownClock } from './CountdownClock';
 
-// Constants for color transitions
-const BRIGHT_YELLOW = "#fbbf24"; // Tailwind yellow-400
-const INACTIVE_GRAY = "#3f3f46"; // Tailwind zinc-700
-
 const StarChart = () => {
   const DECAY_TIME = 5 * 1000; // 5 seconds for testing (change to 4 hours for production)
   const UPDATE_INTERVAL = 100;
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
-
-  // Helper function to interpolate between two colors
-  const interpolateColor = (progress: number) => {
-    // Convert progress to decimal
-    const t = progress / 100;
-
-    // Parse the hex colors into RGB components
-    const startRGB = {
-      r: parseInt(BRIGHT_YELLOW.slice(1, 3), 16),
-      g: parseInt(BRIGHT_YELLOW.slice(3, 5), 16),
-      b: parseInt(BRIGHT_YELLOW.slice(5, 7), 16),
-    };
-
-    const endRGB = {
-      r: parseInt(INACTIVE_GRAY.slice(1, 3), 16),
-      g: parseInt(INACTIVE_GRAY.slice(3, 5), 16),
-      b: parseInt(INACTIVE_GRAY.slice(5, 7), 16),
-    };
-
-    // Interpolate each component
-    const resultRGB = {
-      r: Math.round(startRGB.r * t + endRGB.r * (1 - t)),
-      g: Math.round(startRGB.g * t + endRGB.g * (1 - t)),
-      b: Math.round(startRGB.b * t + endRGB.b * (1 - t)),
-    };
-
-    // Convert back to hex
-    return `#${resultRGB.r.toString(16).padStart(2, '0')}${resultRGB.g.toString(16).padStart(2, '0')}${resultRGB.b.toString(16).padStart(2, '0')}`;
-  };
 
   useEffect(() => {
     if (stars.some(Boolean)) {
@@ -72,21 +39,6 @@ const StarChart = () => {
     }
   }, [DECAY_TIME, stars]);
 
-  const getStarStyle = (index: number) => {
-    const lastActiveIndex = stars.lastIndexOf(true);
-    const isActive = stars[index];
-
-    if (!isActive) {
-      return { fill: INACTIVE_GRAY, stroke: INACTIVE_GRAY };
-    }
-
-    if (index === lastActiveIndex) {
-      const currentColor = interpolateColor(lastStarProgress);
-      return { fill: currentColor, stroke: currentColor };
-    }
-
-    return { fill: BRIGHT_YELLOW, stroke: BRIGHT_YELLOW };
-  };
 
   return (
     <div className="min-h-screen bg-zinc-900 p-4">
@@ -120,7 +72,7 @@ const StarChart = () => {
               <div key={index} className="flex justify-center">
                 <Star
                   size={48}
-                  style={{ fill: getStarStyle(index).fill, stroke: getStarStyle(index).stroke }}
+                  style={useStarStyle(index, stars, lastStarProgress)}
                 />
               </div>
             ))}
