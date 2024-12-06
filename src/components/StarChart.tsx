@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useStarStyles } from '@/lib/utils';
 import StarStats from './StarStats';
+import { OTPProvider } from './OTPProvider';
 
 const StarChart = () => {
   const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
@@ -12,8 +13,25 @@ const StarChart = () => {
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
+  const [selectedStar, setSelectedStar] = useState<number | null>(null);
 
   const starStyles = useStarStyles(stars, lastStarProgress);
+
+  const handleStarClick = (index: number) => {
+    if (!stars[index]) {
+      setSelectedStar(index);
+    }
+  };
+
+  const handleOTPSuccess = () => {
+    if (selectedStar !== null) {
+      const newStars = [...stars];
+      newStars[selectedStar] = true;
+      setStars(newStars);
+      setLastStarProgress(100);
+      setSelectedStar(null);
+    }
+  };
 
   useEffect(() => {
     if (stars.some(Boolean)) {
@@ -62,10 +80,17 @@ const StarChart = () => {
                 <Star
                   size={48}
                   style={starStyles[index]}
+                  className="cursor-pointer"
+                  onClick={() => handleStarClick(index)}
                 />
               </div>
             ))}
           </div>
+          <OTPProvider 
+            isOpen={selectedStar !== null}
+            onClose={() => setSelectedStar(null)}
+            onSuccess={handleOTPSuccess}
+          />
         </CardContent>
       </Card>
     </div>
