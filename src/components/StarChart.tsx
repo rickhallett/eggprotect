@@ -21,14 +21,14 @@ const StarChart = () => {
   const interpolateColor = (progress: number) => {
     // Convert progress to decimal
     const t = progress / 100;
-    
+
     // Parse the hex colors into RGB components
     const startRGB = {
       r: parseInt(BRIGHT_YELLOW.slice(1, 3), 16),
       g: parseInt(BRIGHT_YELLOW.slice(3, 5), 16),
       b: parseInt(BRIGHT_YELLOW.slice(5, 7), 16),
     };
-    
+
     const endRGB = {
       r: parseInt(INACTIVE_GRAY.slice(1, 3), 16),
       g: parseInt(INACTIVE_GRAY.slice(3, 5), 16),
@@ -77,15 +77,15 @@ const StarChart = () => {
     const isActive = stars[index];
 
     if (!isActive) {
-      return `fill-[${INACTIVE_GRAY}] stroke-[${INACTIVE_GRAY}]`;
+      return { fill: INACTIVE_GRAY, stroke: INACTIVE_GRAY };
     }
-    
+
     if (index === lastActiveIndex) {
       const currentColor = interpolateColor(lastStarProgress);
-      return `fill-[${currentColor}] stroke-[${currentColor}]`;
+      return { fill: currentColor, stroke: currentColor };
     }
-    
-    return `fill-[${BRIGHT_YELLOW}] stroke-[${BRIGHT_YELLOW}]`;
+
+    return { fill: BRIGHT_YELLOW, stroke: BRIGHT_YELLOW };
   };
 
   return (
@@ -107,8 +107,8 @@ const StarChart = () => {
                   <Progress value={lastStarProgress} />
                 </div>
                 <div className="mt-2 text-center">
-                  <CountdownClock 
-                    targetTime={Math.max(0, DECAY_TIME * (lastStarProgress / 100))} 
+                  <CountdownClock
+                    targetTime={Math.max(0, DECAY_TIME * (lastStarProgress / 100))}
                   />
                 </div>
               </>
@@ -120,7 +120,7 @@ const StarChart = () => {
               <div key={index} className="flex justify-center">
                 <Star
                   size={48}
-                  className={`transition-colors duration-300 ${getStarStyle(index)}`}
+                  style={{ fill: getStarStyle(index).fill, stroke: getStarStyle(index).stroke }}
                 />
               </div>
             ))}
