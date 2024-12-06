@@ -30,22 +30,12 @@ const InputOTPGroup = React.forwardRef<
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
-interface InputOTPSlotProps extends React.ComponentPropsWithoutRef<"div"> {
-  isActive: boolean;
-  char: string | null;
-  placeholderChar: string | null;
-  hasFakeCaret: boolean;
-  index: number;
-  isFocused: boolean;
-}
-
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
-  InputOTPSlotProps
->(({ index, className, ...props }, ref) => {
-  console.log({ index, className, ...props })
+  React.ComponentPropsWithoutRef<"div">
+>(({ className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[props.index]
 
   return (
     <div

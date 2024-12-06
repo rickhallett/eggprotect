@@ -13,24 +13,19 @@ const StarChart = () => {
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
-  const [selectedStar, setSelectedStar] = useState<number | null>(null);
-
+  const [showOTP, setShowOTP] = useState(false);
   const starStyles = useStarStyles(stars, lastStarProgress);
 
-  const handleStarClick = (index: number) => {
-    if (!stars[index]) {
-      setSelectedStar(index);
-    }
-  };
-
   const handleOTPSuccess = () => {
-    if (selectedStar !== null) {
+    const inactiveCount = stars.filter(star => !star).length;
+    if (inactiveCount > 0) {
       const newStars = [...stars];
-      newStars[selectedStar] = true;
+      const firstInactiveIndex = newStars.indexOf(false);
+      newStars[firstInactiveIndex] = true;
       setStars(newStars);
       setLastStarProgress(100);
-      setSelectedStar(null);
     }
+    setShowOTP(false);
   };
 
   useEffect(() => {
@@ -80,15 +75,13 @@ const StarChart = () => {
                 <Star
                   size={48}
                   style={starStyles[index]}
-                  className="cursor-pointer"
-                  onClick={() => handleStarClick(index)}
                 />
               </div>
             ))}
           </div>
           <OTPProvider 
-            isOpen={selectedStar !== null}
-            onClose={() => setSelectedStar(null)}
+            isOpen={showOTP}
+            onClose={() => setShowOTP(false)}
             onSuccess={handleOTPSuccess}
           />
         </CardContent>
