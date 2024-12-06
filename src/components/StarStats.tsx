@@ -23,8 +23,16 @@ export default function StarStats({ stars, lastStarProgress, decayTime }: StarSt
   return (
     <div className="flex flex-col items-center">
       <StarCount stars={stars} />
-      <ProgressBar lastStarProgress={lastStarProgress} />
-      <CountdownClock targetTime={Math.max(0, decayTime * (lastStarProgress / 100))} />
+      {stars.some(Boolean) && (
+        <>
+          <div className="mt-2 w-full">
+            <ProgressBar lastStarProgress={lastStarProgress} />
+          </div>
+          <div className="mt-2">
+            <CountdownClock targetTime={Math.max(0, decayTime * (lastStarProgress / 100))} />
+          </div>
+        </>
+      )}
     </div>
   );
 };
