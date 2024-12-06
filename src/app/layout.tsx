@@ -32,7 +32,7 @@ export default function RootLayout({
         <div className="flex flex-col items-center justify-center h-screen">
           {children}
         </div>
-        <Toaster position="bottom" />
+        <Toaster />
       </body>
     </html>
   );

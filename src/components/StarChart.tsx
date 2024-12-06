@@ -44,7 +44,7 @@ const StarChart = () => {
 
 
   return (
-    <div className="min-h-screen bg-zinc-900 p-4">
+    <div className="max-h-screenbg-zinc-900 p-4">
       <Card className="max-w-md mx-auto bg-zinc-800 text-zinc">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold text-slate-400">
