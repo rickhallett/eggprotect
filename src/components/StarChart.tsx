@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
-import { CountdownClock } from './CountdownClock';
 import { useStarStyles } from '@/lib/utils';
+import StarStats from './StarStats';
+
 const StarChart = () => {
-  const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "5000");
+  const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
   const UPDATE_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UPDATE_INTERVAL || "100");
 
   const [stars, setStars] = useState(Array(9).fill(true));
@@ -39,7 +39,7 @@ const StarChart = () => {
 
       return () => clearInterval(timer);
     }
-  }, [DECAY_TIME, stars]);
+  }, [DECAY_TIME, UPDATE_INTERVAL, stars]);
 
 
 
@@ -48,30 +48,16 @@ const StarChart = () => {
       <Card className="max-w-md mx-auto bg-zinc-800 text-zinc">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
-            Accountability Stars
+            Tick, tock...
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <p className="text-sm text-slate-600 text-center">
-              {stars.filter(Boolean).length} of {stars.length} stars active
-            </p>
-            {stars.some(Boolean) && (
-              <>
-                <div className="mt-2">
-                  <Progress value={lastStarProgress} />
-                </div>
-                <div className="mt-2 text-center">
-                  <CountdownClock
-                    targetTime={Math.max(0, DECAY_TIME * (lastStarProgress / 100))}
-                  />
-                </div>
-              </>
-            )}
+            <StarStats stars={stars} lastStarProgress={lastStarProgress} decayTime={DECAY_TIME} />
           </div>
 
           <div className="grid grid-cols-3 gap-6 p-4">
-            {stars.map((isActive, index) => (
+            {stars.map((_, index) => (
               <div key={index} className="flex justify-center">
                 <Star
                   size={48}
@@ -84,6 +70,8 @@ const StarChart = () => {
       </Card>
     </div>
   );
+
+
 };
 
 export default StarChart;
