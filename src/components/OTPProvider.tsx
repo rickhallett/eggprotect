@@ -40,14 +40,18 @@ export function OTPProvider({ isOpen, onClose, onSuccess }: OTPProviderProps) {
         <h2 className="text-lg font-semibold mb-4 text-slate-200">Enter Recovery Code</h2>
         <InputOTP
           maxLength={6}
+          value=""
+          onChange={handleValueChange}
           render={({ slots }) => (
             <InputOTPGroup className="gap-2">
               {slots.map((slot, index) => (
-                <InputOTPSlot key={index} index={index} {...slot} />
+                <InputOTPSlot 
+                  key={index} 
+                  {...slot}
+                />
               ))}
             </InputOTPGroup>
           )}
-          onComplete={handleValueChange}
         />
       </div>
     </div>
