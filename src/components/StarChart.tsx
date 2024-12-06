@@ -7,8 +7,8 @@ const StarChart = () => {
   const stars = Array(7).fill(true); // Example: 7 stars, all active
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
-      <Card className="max-w-md mx-auto">
+    <div className="min-h-screen bg-zinc-900 p-4">
+      <Card className="max-w-md mx-auto bg-zinc-800 text-zinc">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
             Accountability Stars
