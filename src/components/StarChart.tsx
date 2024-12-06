@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
+import { CountdownClock } from './CountdownClock';
 
 const StarChart = () => {
   // const DECAY_TIME = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
@@ -69,9 +70,16 @@ const StarChart = () => {
               {stars.filter(Boolean).length} of {stars.length} stars active
             </p>
             {stars.some(Boolean) && (
-              <div className="mt-2">
-                <Progress value={lastStarProgress} />
-              </div>
+              <>
+                <div className="mt-2">
+                  <Progress value={lastStarProgress} />
+                </div>
+                <div className="mt-2 text-center">
+                  <CountdownClock 
+                    targetTime={Math.max(0, DECAY_TIME * (lastStarProgress / 100))} 
+                  />
+                </div>
+              </>
             )}
           </div>
 
