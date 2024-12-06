@@ -10,12 +10,14 @@ export function CountdownClock({ targetTime }: CountdownClockProps) {
   const [timeLeft, setTimeLeft] = useState(targetTime)
 
   useEffect(() => {
+    setTimeLeft(targetTime) // Reset timeLeft when targetTime changes
+    
     const timer = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1000))
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [targetTime]) // Add targetTime to dependency array
 
   // Convert milliseconds to hours, minutes, seconds
   const hours = Math.floor(timeLeft / (1000 * 60 * 60))
