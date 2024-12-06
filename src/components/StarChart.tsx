@@ -5,13 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
 import { CountdownClock } from './CountdownClock';
+import { useStarStyles } from '@/lib/utils';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const StarChart = () => {
-  const DECAY_TIME = 5 * 1000; // 5 seconds for testing (change to 4 hours for production)
-  const UPDATE_INTERVAL = 100;
+  const DECAY_TIME = parseInt(process.env.DECAY_TIME || "5000");
+  const UPDATE_INTERVAL = parseInt(process.env.UPDATE_INTERVAL || "100");
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
+
+  const starStyles = useStarStyles(stars, lastStarProgress);
 
   useEffect(() => {
     if (stars.some(Boolean)) {
@@ -38,6 +44,7 @@ const StarChart = () => {
       return () => clearInterval(timer);
     }
   }, [DECAY_TIME, stars]);
+
 
 
   return (
@@ -72,7 +79,7 @@ const StarChart = () => {
               <div key={index} className="flex justify-center">
                 <Star
                   size={48}
-                  style={useStarStyle(index, stars, lastStarProgress)}
+                  style={starStyles[index]}
                 />
               </div>
             ))}
