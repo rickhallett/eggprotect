@@ -6,13 +6,9 @@ import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
 import { CountdownClock } from './CountdownClock';
 import { useStarStyles } from '@/lib/utils';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 const StarChart = () => {
-  const DECAY_TIME = parseInt(process.env.DECAY_TIME || "5000");
-  const UPDATE_INTERVAL = parseInt(process.env.UPDATE_INTERVAL || "100");
+  const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "5000");
+  const UPDATE_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UPDATE_INTERVAL || "100");
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
