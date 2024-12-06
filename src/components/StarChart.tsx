@@ -48,13 +48,24 @@ const StarChart = () => {
 
     if (!isActive) return 'fill-zinc-700 text-zinc-700';
     if (index === lastActiveIndex) {
-      // Start with bright yellow (60deg hue, 100% saturation, 50% lightness)
-      // End with grey (60deg hue, 0% saturation, 50% lightness)
-      const saturation = lastStarProgress; // 100 to 0
-      const lightness = 50 - ((100 - lastStarProgress) * 0.2); // 50 to 30
-      return `fill-[hsl(60,${saturation}%,${lightness}%)] text-[hsl(60,${saturation}%,${lightness}%)]`;
+      // First half: bright yellow (60deg hue, 100% sat, 50% light) to light yellow (60deg hue, 100% sat, 85% light)
+      // Second half: light yellow to grey (60deg hue, 0% sat, 85% light)
+      let saturation = 100;
+      let lightness = 50;
+      
+      if (lastStarProgress > 50) {
+        // First half: increase lightness from 50% to 85%
+        lightness = 50 + ((100 - lastStarProgress) * 0.7);
+      } else {
+        // Second half: keep high lightness but reduce saturation
+        lightness = 85;
+        saturation = lastStarProgress * 2; // will go from 100 to 0
+      }
+      
+      const color = `hsl(60,${saturation}%,${lightness}%)`;
+      return `fill-[${color}] text-[${color}] stroke-[${color}]`;
     }
-    return 'fill-yellow-400 text-yellow-400';
+    return 'fill-yellow-400 text-yellow-400 stroke-yellow-400';
   };
 
   return (
