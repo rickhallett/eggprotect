@@ -6,21 +6,22 @@ import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
 
 const StarChart = () => {
-  const DECAY_TIME = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
-  const UPDATE_INTERVAL = 1000; // Update every second
+  // const DECAY_TIME = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+  const DECAY_TIME = 5 * 1000; // 10 seconds in milliseconds
+  const UPDATE_INTERVAL = 100; // Update every second
 
-  const [stars, setStars] = useState(Array(7).fill(true));
+  const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
 
   useEffect(() => {
     if (stars.some(Boolean)) { // Only run if there are active stars
       const startTime = Date.now();
-      
+
       const timer = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, DECAY_TIME - elapsed);
         const progress = (remaining / DECAY_TIME) * 100;
-        
+
         setLastStarProgress(progress);
 
         if (progress === 0) {
@@ -37,14 +38,14 @@ const StarChart = () => {
 
       return () => clearInterval(timer);
     }
-  }, [stars]);
+  }, [DECAY_TIME, stars]);
 
   // Calculate color intensity for the last active star
   const getStarStyle = (index: number) => {
     const lastActiveIndex = stars.lastIndexOf(true);
     const isActive = stars[index];
 
-    if (!isActive) return 'fill-slate-200 text-slate-200';
+    if (!isActive) return 'fill-zinc-700 text-zinc-700';
     if (index === lastActiveIndex) {
       // Interpolate between yellow and grey based on progress
       const intensity = Math.floor((lastStarProgress / 100) * 400);
