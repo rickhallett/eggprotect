@@ -43,7 +43,7 @@ export function OTPProvider({ isOpen, onClose, onSuccess }: OTPProviderProps) {
           render={({ slots }) => (
             <InputOTPGroup className="gap-2">
               {slots.map((slot, index) => (
-                <InputOTPSlot key={index} {...slot} />
+                <InputOTPSlot key={index} index={index} {...slot} />
               ))}
             </InputOTPGroup>
           )}
