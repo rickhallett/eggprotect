@@ -42,11 +42,13 @@ export function OTPProvider({ isOpen, onClose, onSuccess }: OTPProviderProps) {
           maxLength={6}
           value=""
           onChange={handleValueChange}
-          render={({ slots }) => (
+          render={({ slots, isFocused }) => (
             <InputOTPGroup className="gap-2">
               {slots.map((slot, index) => (
                 <InputOTPSlot 
                   key={index} 
+                  index={index}
+                  isFocused={isFocused}
                   {...slot}
                 />
               ))}
