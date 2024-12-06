@@ -6,16 +6,48 @@ import { Progress } from "@/components/ui/progress";
 import { Star } from "lucide-react";
 import { CountdownClock } from './CountdownClock';
 
+// Constants for color transitions
+const BRIGHT_YELLOW = "#fbbf24"; // Tailwind yellow-400
+const INACTIVE_GRAY = "#3f3f46"; // Tailwind zinc-700
+
 const StarChart = () => {
-  // const DECAY_TIME = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
-  const DECAY_TIME = 5 * 1000; // 10 seconds in milliseconds
-  const UPDATE_INTERVAL = 100; // Update every second
+  const DECAY_TIME = 5 * 1000; // 5 seconds for testing (change to 4 hours for production)
+  const UPDATE_INTERVAL = 100;
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
 
+  // Helper function to interpolate between two colors
+  const interpolateColor = (progress: number) => {
+    // Convert progress to decimal
+    const t = progress / 100;
+    
+    // Parse the hex colors into RGB components
+    const startRGB = {
+      r: parseInt(BRIGHT_YELLOW.slice(1, 3), 16),
+      g: parseInt(BRIGHT_YELLOW.slice(3, 5), 16),
+      b: parseInt(BRIGHT_YELLOW.slice(5, 7), 16),
+    };
+    
+    const endRGB = {
+      r: parseInt(INACTIVE_GRAY.slice(1, 3), 16),
+      g: parseInt(INACTIVE_GRAY.slice(3, 5), 16),
+      b: parseInt(INACTIVE_GRAY.slice(5, 7), 16),
+    };
+
+    // Interpolate each component
+    const resultRGB = {
+      r: Math.round(startRGB.r * t + endRGB.r * (1 - t)),
+      g: Math.round(startRGB.g * t + endRGB.g * (1 - t)),
+      b: Math.round(startRGB.b * t + endRGB.b * (1 - t)),
+    };
+
+    // Convert back to hex
+    return `#${resultRGB.r.toString(16).padStart(2, '0')}${resultRGB.g.toString(16).padStart(2, '0')}${resultRGB.b.toString(16).padStart(2, '0')}`;
+  };
+
   useEffect(() => {
-    if (stars.some(Boolean)) { // Only run if there are active stars
+    if (stars.some(Boolean)) {
       const startTime = Date.now();
 
       const timer = setInterval(() => {
@@ -26,36 +58,34 @@ const StarChart = () => {
         setLastStarProgress(progress);
 
         if (progress === 0) {
-          // Find the last active star and deactivate it
           const lastActiveIndex = stars.lastIndexOf(true);
           if (lastActiveIndex !== -1) {
             const newStars = [...stars];
             newStars[lastActiveIndex] = false;
             setStars(newStars);
-            setLastStarProgress(100); // Reset progress for next star
+            setLastStarProgress(100);
           }
         }
       }, UPDATE_INTERVAL);
 
       return () => clearInterval(timer);
     }
-  }, [DECAY_TIME, stars]);
+  }, [stars]);
 
   const getStarStyle = (index: number) => {
     const lastActiveIndex = stars.lastIndexOf(true);
     const isActive = stars[index];
 
-    if (!isActive) return 'fill-zinc-700 text-zinc-700 stroke-zinc-700';
-    if (index === lastActiveIndex) {
-      // Calculate color based on progress
-      const hue = 60; // yellow
-      const saturation = Math.min(100, lastStarProgress); // Fade out saturation
-      const lightness = Math.min(85, 50 + (100 - lastStarProgress) / 2); // Gradually get lighter
-      
-      const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-      return `fill-[${color}] stroke-[${color}]`;
+    if (!isActive) {
+      return `fill-[${INACTIVE_GRAY}] stroke-[${INACTIVE_GRAY}]`;
     }
-    return 'fill-yellow-400 stroke-yellow-400';
+    
+    if (index === lastActiveIndex) {
+      const currentColor = interpolateColor(lastStarProgress);
+      return `fill-[${currentColor}] stroke-[${currentColor}]`;
+    }
+    
+    return `fill-[${BRIGHT_YELLOW}] stroke-[${BRIGHT_YELLOW}]`;
   };
 
   return (
@@ -67,7 +97,6 @@ const StarChart = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Progress indicator */}
           <div className="mb-6">
             <p className="text-sm text-slate-600 text-center">
               {stars.filter(Boolean).length} of {stars.length} stars active
@@ -86,13 +115,12 @@ const StarChart = () => {
             )}
           </div>
 
-          {/* Star grid */}
           <div className="grid grid-cols-3 gap-6 p-4">
             {stars.map((isActive, index) => (
               <div key={index} className="flex justify-center">
                 <Star
                   size={48}
-                  className={`transition-all duration-300 ${getStarStyle(index)}`}
+                  className={`transition-colors duration-300 ${getStarStyle(index)}`}
                 />
               </div>
             ))}
