@@ -17,6 +17,12 @@ const InputOTP = React.forwardRef<
       containerClassName
     )}
     className={cn("disabled:cursor-not-allowed", className)}
+    autoComplete="off"
+    autoCorrect="off"
+    spellCheck="false"
+    aria-label="OTP input"
+    data-lpignore="true"
+    data-form-type="other"
     {...props}
   />
 ))
