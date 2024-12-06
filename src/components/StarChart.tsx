@@ -41,31 +41,21 @@ const StarChart = () => {
     }
   }, [DECAY_TIME, stars]);
 
-  // Calculate color for the last active star
   const getStarStyle = (index: number) => {
     const lastActiveIndex = stars.lastIndexOf(true);
     const isActive = stars[index];
 
-    if (!isActive) return 'fill-zinc-700 text-zinc-700';
+    if (!isActive) return 'fill-zinc-700 text-zinc-700 stroke-zinc-700';
     if (index === lastActiveIndex) {
-      // First half: bright yellow (60deg hue, 100% sat, 50% light) to light yellow (60deg hue, 100% sat, 85% light)
-      // Second half: light yellow to grey (60deg hue, 0% sat, 85% light)
-      let saturation = 100;
-      let lightness = 50;
+      // Calculate color based on progress
+      const hue = 60; // yellow
+      const saturation = Math.min(100, lastStarProgress); // Fade out saturation
+      const lightness = Math.min(85, 50 + (100 - lastStarProgress) / 2); // Gradually get lighter
       
-      if (lastStarProgress > 50) {
-        // First half: increase lightness from 50% to 85%
-        lightness = 50 + ((100 - lastStarProgress) * 0.7);
-      } else {
-        // Second half: keep high lightness but reduce saturation
-        lightness = 85;
-        saturation = lastStarProgress * 2; // will go from 100 to 0
-      }
-      
-      const color = `hsl(60,${saturation}%,${lightness}%)`;
-      return `fill-[${color}] text-[${color}] stroke-[${color}]`;
+      const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      return `fill-[${color}] stroke-[${color}]`;
     }
-    return 'fill-yellow-400 text-yellow-400 stroke-yellow-400';
+    return 'fill-yellow-400 stroke-yellow-400';
   };
 
   return (
