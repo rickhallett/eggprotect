@@ -41,16 +41,18 @@ const StarChart = () => {
     }
   }, [DECAY_TIME, stars]);
 
-  // Calculate color intensity for the last active star
+  // Calculate color for the last active star
   const getStarStyle = (index: number) => {
     const lastActiveIndex = stars.lastIndexOf(true);
     const isActive = stars[index];
 
     if (!isActive) return 'fill-zinc-700 text-zinc-700';
     if (index === lastActiveIndex) {
-      // Interpolate between yellow and grey based on progress
-      const intensity = Math.floor((lastStarProgress / 100) * 400);
-      return `fill-yellow-${intensity} text-yellow-${intensity}`;
+      // Start with bright yellow (60deg hue, 100% saturation, 50% lightness)
+      // End with grey (60deg hue, 0% saturation, 50% lightness)
+      const saturation = lastStarProgress; // 100 to 0
+      const lightness = 50 - ((100 - lastStarProgress) * 0.2); // 50 to 30
+      return `fill-[hsl(60,${saturation}%,${lightness}%)] text-[hsl(60,${saturation}%,${lightness}%)]`;
     }
     return 'fill-yellow-400 text-yellow-400';
   };
