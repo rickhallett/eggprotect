@@ -14,8 +14,8 @@ export function useStarAnimation(stars: Star[]) {
       if (!star.active) return 0;
       const expiryTime = new Date(star.expiresAt).getTime();
       const timeLeft = expiryTime - now;
-      const positionDecayTime = decayTime * (9 - index);
-      return Math.max(0, Math.min(100, (timeLeft / positionDecayTime) * 100));
+      // Use base decay time for progress calculation
+      return Math.max(0, Math.min(100, (timeLeft / decayTime) * 100));
     });
   }, [stars, decayTime]);
 
