@@ -10,11 +10,13 @@ export function useStarAnimation(stars: Star[]) {
 
   const calculateProgress = useCallback(() => {
     const now = Date.now();
-    return stars.map(star => {
+    return stars.map((star, index) => {
       if (!star.active) return 0;
       const expiryTime = new Date(star.expiresAt).getTime();
       const timeLeft = expiryTime - now;
-      return Math.max(0, Math.min(100, (timeLeft / decayTime) * 100));
+      // Use position-based decay time
+      const positionDecayTime = decayTime * (9 - index);
+      return Math.max(0, Math.min(100, (timeLeft / positionDecayTime) * 100));
     });
   }, [stars, decayTime]);
 
