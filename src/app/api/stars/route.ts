@@ -56,7 +56,7 @@ export async function PATCH(request: Request) {
     const stars = await prisma.star.findMany({
       orderBy: { position: 'asc' }
     });
-    
+
     // Find the position of the first inactive star
     const firstInactivePosition = stars.findIndex(star => !star.active);
     if (firstInactivePosition === -1) {
@@ -69,10 +69,10 @@ export async function PATCH(request: Request) {
       where: { position: firstInactivePosition },
       data: {
         active: true,
-        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - lastInactivePosition))
+        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - firstInactivePosition))
       }
     });
-    
+
     return NextResponse.json(star);
   } catch (error) {
     console.error('Error in PATCH /api/stars:', error);
