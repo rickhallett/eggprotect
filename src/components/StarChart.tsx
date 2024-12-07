@@ -66,13 +66,21 @@ const StarChart = () => {
       const timeUntilExpiry = DECAY_TIME * (9 - firstInactiveIndex);
       const expiresAt = new Date(Date.now() + timeUntilExpiry);
 
+      // Update both pending state and cached data
       pendingStateUpdateRef.current = {
         position: firstInactiveIndex,
         active: true,
         expiresAt: expiresAt
       };
-      updateStarAPI();
+      
+      // Update the cached data immediately
+      lastStarDataRef.current = {
+        position: firstInactiveIndex,
+        active: true,
+        expiresAt: expiresAt.toISOString()
+      };
 
+      updateStarAPI();
       setLastStarProgress(100);
     }
     setActiveOTP(false);
