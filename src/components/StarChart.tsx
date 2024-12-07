@@ -103,13 +103,23 @@ const StarChart = () => {
             newStars[lastActiveIndex] = false;
             setStars(newStars);
 
+            const newExpiresAt = new Date(now);
+            
+            // Update both pending state and cached data
             pendingStateUpdateRef.current = {
               position: lastActiveIndex,
               active: false,
-              expiresAt: new Date(now)
+              expiresAt: newExpiresAt
             };
+            
+            // Update cached data immediately
+            lastStarDataRef.current = {
+              position: lastActiveIndex,
+              active: false,
+              expiresAt: newExpiresAt.toISOString()
+            };
+            
             updateStarAPI();
-
             setLastStarProgress(100);
           }
         }
