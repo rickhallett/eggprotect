@@ -10,12 +10,16 @@ import { useStarSystem } from '@/hooks/useStarSystem';
 import { useStarAnimation } from '@/hooks/useStarAnimation';
 
 const StarChart = () => {
-  const { stars, loading, error, activateNextStar } = useStarSystem();
+  const { stars, activateNextStar, isInitialized } = useStarSystem({
+    totalStars: 9,
+    starDuration: 3000,
+    cooldownPeriod: 1000
+  });
   const progress = useStarAnimation(stars);
   const [showOTP, setShowOTP] = useState(false);
 
-  const lastActiveStar = useMemo(() => 
-    stars.findIndex(star => star.active), 
+  const lastActiveStar = useMemo(() =>
+    stars.findIndex(star => star.active),
     [stars]
   );
 
@@ -24,7 +28,7 @@ const StarChart = () => {
     if (lastActiveStar === -1) return 0;
     return progress[lastActiveStar] || 0;
   }, [progress, lastActiveStar]);
-  
+
   const starStyles = useStarStyles(activeStates, currentProgress);
 
   useEffect(() => {
@@ -54,7 +58,7 @@ const StarChart = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <StarStats 
+            <StarStats
               stars={stars.map(star => star.active)}
               lastStarProgress={currentProgress}
               decayTime={parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000")}
