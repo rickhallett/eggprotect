@@ -45,20 +45,32 @@ const interpolateStrokeWidth = (progress: number) => {
 // Custom hook
 export function useStarStyles(stars: boolean[], lastStarProgress: number) {
   return useMemo(() =>
-    stars.map((_, index) => {
-      const lastActiveIndex = stars.lastIndexOf(true)
-      const isActive = stars[index]
+    stars.map((isActive, index) => {
+      const lastActiveIndex = stars.lastIndexOf(true);
 
       if (!isActive) {
-        return { fill: INACTIVE_GRAY, stroke: INACTIVE_GRAY, strokeWidth: 0.01 }
+        return { 
+          fill: INACTIVE_GRAY, 
+          stroke: INACTIVE_GRAY, 
+          strokeWidth: 1 
+        };
       }
 
-      if (index === lastActiveIndex) {
-        const currentColor = interpolateColor(lastStarProgress)
-        return { fill: currentColor, stroke: currentColor, strokeWidth: interpolateStrokeWidth(lastStarProgress) }
+      if (index === lastActiveIndex && lastStarProgress !== undefined) {
+        const currentColor = interpolateColor(Math.max(0, Math.min(100, lastStarProgress)));
+        return { 
+          fill: currentColor, 
+          stroke: currentColor, 
+          strokeWidth: Math.max(1, interpolateStrokeWidth(lastStarProgress)) 
+        };
       }
 
-      return { fill: BRIGHT_YELLOW, stroke: BRIGHT_YELLOW }
-    })
-    , [stars, lastStarProgress])
+      return { 
+        fill: BRIGHT_YELLOW, 
+        stroke: BRIGHT_YELLOW,
+        strokeWidth: 1 
+      };
+    }),
+    [stars, lastStarProgress]
+  );
 }

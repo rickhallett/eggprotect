@@ -20,7 +20,11 @@ const StarChart = () => {
   );
 
   const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
-  const currentProgress = useMemo(() => progress[lastActiveStar], [progress, lastActiveStar]);
+  const currentProgress = useMemo(() => {
+    if (lastActiveStar === -1) return 0;
+    return progress[lastActiveStar] || 0;
+  }, [progress, lastActiveStar]);
+  
   const starStyles = useStarStyles(activeStates, currentProgress);
 
   useEffect(() => {
