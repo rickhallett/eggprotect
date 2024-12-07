@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useStarStyles } from '@/lib/utils';
@@ -9,13 +9,14 @@ import { OTPForm } from './OPTForm';
 
 const StarChart = () => {
   const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
-  const UPDATE_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UPDATE_INTERVAL || "100");
+  const UPDATE_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UPDATE_INTERVAL || "1000");
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
   const [activeOTP, setActiveOTP] = useState(false);
   const [loading, setLoading] = useState(true);
   const starStyles = useStarStyles(stars, lastStarProgress);
+  const lastRequestTimeRef = useRef(0);
 
   // Fetch initial star state
   useEffect(() => {
@@ -24,7 +25,7 @@ const StarChart = () => {
       const data = await response.json();
       const newStars = Array(9).fill(false);
       const now = Date.now();
-      
+
       data.forEach((star: { position: number, active: boolean, expiresAt: string }) => {
         newStars[star.position] = star.active;
         if (star.active) {
@@ -35,7 +36,7 @@ const StarChart = () => {
           }
         }
       });
-      
+
       setStars(newStars);
       setLoading(false);
     };
@@ -49,11 +50,11 @@ const StarChart = () => {
       const firstInactiveIndex = newStars.indexOf(false);
       newStars[firstInactiveIndex] = true;
       setStars(newStars);
-      
+
       // Calculate new expiry time based on position
       const timeUntilExpiry = DECAY_TIME * (9 - firstInactiveIndex);
       const expiresAt = new Date(Date.now() + timeUntilExpiry);
-      
+
       // Update the star in the database
       await fetch('/api/stars', {
         method: 'POST',
@@ -64,7 +65,7 @@ const StarChart = () => {
           expiresAt: expiresAt
         })
       });
-      
+
       setLastStarProgress(100);
     }
     setActiveOTP(false);
@@ -75,12 +76,12 @@ const StarChart = () => {
       const timer = setInterval(async () => {
         const now = Date.now();
         const lastActiveIndex = stars.lastIndexOf(true);
-        
+
         if (lastActiveIndex !== -1) {
           const response = await fetch('/api/stars');
           const data = await response.json();
           const star = data.find((s: { position: number }) => s.position === lastActiveIndex);
-          
+
           if (star) {
             const timeLeft = new Date(star.expiresAt).getTime() - now;
             const progress = (timeLeft / DECAY_TIME) * 100;
@@ -90,18 +91,22 @@ const StarChart = () => {
               const newStars = [...stars];
               newStars[lastActiveIndex] = false;
               setStars(newStars);
-              
-              // Update the star in the database
-              await fetch('/api/stars', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  position: lastActiveIndex,
-                  active: false,
-                  expiresAt: new Date(now)
-                })
-              });
-              
+
+              const now = Date.now();
+              console.log(now - lastRequestTimeRef.current)
+              if (now - lastRequestTimeRef.current >= 1000) {
+                await fetch('/api/stars', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    position: lastActiveIndex,
+                    active: false,
+                    expiresAt: new Date(now)
+                  })
+                });
+                lastRequestTimeRef.current = now;
+              }
+
               setLastStarProgress(100);
             }
           }
