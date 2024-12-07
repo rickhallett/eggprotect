@@ -14,11 +14,13 @@ export function useStarAnimation(stars: Star[]) {
       if (!star.active) return 0;
       
       const expiryTime = new Date(star.expiresAt).getTime();
-      const totalDuration = expiryTime - (now - decayTime); // Calculate total duration
       const timeLeft = expiryTime - now;
       
-      // Calculate progress based on actual time remaining vs total duration
-      return Math.max(0, Math.min(100, (timeLeft / decayTime) * 100));
+      // Each star has its own duration based on position
+      const starDuration = decayTime * (9 - star.position);
+      
+      // Calculate progress based on the individual star's duration
+      return Math.max(0, Math.min(100, (timeLeft / starDuration) * 100));
     });
   }, [stars, decayTime]);
 
