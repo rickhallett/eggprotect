@@ -44,6 +44,8 @@ const StarChart = () => {
           const progress = (timeLeft / DECAY_TIME) * 100;
           if (star.position === newStars.lastIndexOf(true)) {
             setLastStarProgress(Math.max(0, progress));
+            // Set the initial cached data for the last active star
+            lastStarDataRef.current = star;
           }
         }
       });
