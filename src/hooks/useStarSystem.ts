@@ -1,53 +1,83 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Star, StarSystemState } from '@/lib/types';
+import { Star, StarSystemConfig, StarSystemState } from '@/lib/types';
 
-const POLL_INTERVAL = 3000;
-
-export function useStarSystem(): StarSystemState & {
+export function useStarSystem(config: StarSystemConfig): StarSystemState & {
   activateNextStar: () => Promise<Star | undefined>;
-  refreshStars: () => Promise<void>;
 } {
-  const [state, setState] = useState<StarSystemState>({
-    stars: [],
-    loading: true,
-    error: null
-  });
+  const [stars, setStars] = useState<Star[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const fetchStars = useCallback(async () => {
-    try {
+  const computeCurrentState = useCallback(() => {
+    const now = new Date().getTime();
+    return stars.map(star => ({
+      ...star,
+      active: star.active && new Date(star.expiresAt).getTime() > now
+    }));
+  }, [stars]);
+
+  useEffect(() => {
+    const initializeStars = async () => {
       const response = await fetch('/api/stars');
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      setState(prev => ({ ...prev, stars: data, error: null }));
-    } catch (err) {
-      setState(prev => ({ ...prev, error: 'Failed to fetch stars' }));
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
+      setStars(data);
+      setIsInitialized(true);
+    };
+    initializeStars();
   }, []);
 
   const activateNextStar = useCallback(async () => {
+    const currentState = computeCurrentState();
+    const nextPosition = currentState.filter(s => !s.active).length > 0 
+      ? Math.min(...currentState.filter(s => !s.active).map(s => s.position))
+      : -1;
+
+    if (nextPosition === -1) return;
+
+    const now = new Date();
+    const newStar: Star = {
+      position: nextPosition,
+      active: true,
+      activatedAt: now.toISOString(),
+      expiresAt: new Date(now.getTime() + config.starDuration).toISOString()
+    };
+
+    setStars(prev => 
+      prev.map(s => s.position === nextPosition ? newStar : s)
+    );
+
     try {
-      const response = await fetch('/api/stars', { method: 'PATCH' });
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      await fetchStars();
-      return data;
-    } catch (err) {
-      setState(prev => ({ ...prev, error: 'Failed to activate star' }));
+      const response = await fetch('/api/stars', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ position: nextPosition })
+      });
+      
+      if (!response.ok) {
+        setStars(prev => 
+          prev.map(s => s.position === nextPosition ? 
+            { ...s, active: false, activatedAt: '', expiresAt: '' } : s
+          )
+        );
+        throw new Error('Failed to activate star');
+      }
+
+      const serverStar = await response.json();
+      setStars(prev => 
+        prev.map(s => s.position === nextPosition ? serverStar : s)
+      );
+      return serverStar;
+    } catch (error) {
+      console.error('Failed to activate star:', error);
       return undefined;
     }
-  }, [fetchStars]);
+  }, [stars, config.starDuration, computeCurrentState]);
 
-  useEffect(() => {
-    fetchStars();
-    const interval = setInterval(fetchStars, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchStars]);
-
-  return { 
-    ...state, 
-    activateNextStar, 
-    refreshStars: fetchStars 
+  return {
+    stars: computeCurrentState(),
+    isInitialized,
+    activateNextStar
   };
 }
