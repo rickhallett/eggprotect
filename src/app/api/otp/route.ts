@@ -41,23 +41,55 @@ export async function POST(request: Request) {
   }
 }
 
-// Helper endpoint to generate codes (should be protected in production)
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const code = Math.random().toString().slice(2, 8);
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
 
-    const otpCode = await prisma.oTPCode.create({
-      data: {
-        code,
-        expiresAt
-      }
-    });
+    if (action === 'gen') {
+      // Generate new code
+      const code = Math.random().toString().slice(2, 8);
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    return NextResponse.json({ code: otpCode.code });
+      const otpCode = await prisma.oTPCode.create({
+        data: {
+          code,
+          expiresAt
+        }
+      });
+
+      return NextResponse.json({ code: otpCode.code });
+
+    } else if (action === 'list') {
+      // List all valid codes
+      const validCodes = await prisma.oTPCode.findMany({
+        where: {
+          used: false,
+          expiresAt: {
+            gt: new Date()
+          }
+        },
+        select: {
+          code: true,
+          expiresAt: true,
+          createdAt: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return NextResponse.json({ codes: validCodes });
+
+    } else {
+      return NextResponse.json(
+        { error: 'Invalid action parameter. Use "gen" or "list".' },
+        { status: 400 }
+      );
+    }
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to generate code', message: (error as Error).message },
+      { error: 'Internal server error', message: (error as Error).message },
       { status: 500 }
     );
   }
