@@ -5,6 +5,7 @@ interface StarStatsProps {
   stars: boolean[];
   lastStarProgress: number;
   decayTime: number;
+  expiryTime?: string;
 }
 
 interface StarCountProps {
@@ -19,7 +20,13 @@ export function StarCount({ stars }: StarCountProps) {
   )
 }
 
-export default function StarStats({ stars, lastStarProgress, decayTime }: StarStatsProps) {
+export default function StarStats({ stars, lastStarProgress, decayTime, expiryTime }: StarStatsProps) {
+  const getRemainingTime = () => {
+    if (!expiryTime) return 0;
+    const timeLeft = new Date(expiryTime).getTime() - Date.now();
+    return Math.max(0, timeLeft);
+  };
+
   return (
     <div className="flex flex-col items-center">
       <StarCount stars={stars} />
@@ -29,7 +36,7 @@ export default function StarStats({ stars, lastStarProgress, decayTime }: StarSt
             <ProgressBar lastStarProgress={lastStarProgress} />
           </div>
           <div className="mt-2">
-            <CountdownClock targetTime={Math.max(0, decayTime * (lastStarProgress / 100))} />
+            <CountdownClock targetTime={getRemainingTime()} />
           </div>
         </>
       )}
