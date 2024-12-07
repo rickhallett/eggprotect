@@ -3,25 +3,26 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const starState = await prisma.starState.findFirst({
-      select: {
-        id: true,
-        activeStars: true,
-        updatedAt: true
-      }
+    const stars = await prisma.star.findMany({
+      orderBy: { position: 'asc' }
     })
     
-    if (!starState) {
+    if (stars.length === 0) {
       // Create initial state if none exists
-      const initialState = await prisma.starState.create({
-        data: {
-          id: '1',
-          activeStars: 9
-        }
-      })
-      return NextResponse.json(initialState)
+      const initialStars = await Promise.all(
+        Array(9).fill(null).map((_, index) => 
+          prisma.star.create({
+            data: {
+              position: index,
+              active: true,
+              expiresAt: new Date(Date.now() + parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000"))
+            }
+          })
+        )
+      )
+      return NextResponse.json(initialStars)
     }
-    return NextResponse.json(starState)
+    return NextResponse.json(stars)
   } catch (error) {
     console.error('Error in GET /api/stars:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
@@ -29,11 +30,20 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { activeStars } = await request.json()
-  const starState = await prisma.starState.upsert({
-    where: { id: '1' },
-    update: { activeStars },
-    create: { id: '1', activeStars }
+  const { position, active, expiresAt } = await request.json()
+  
+  const star = await prisma.star.upsert({
+    where: { position },
+    update: { 
+      active,
+      expiresAt: new Date(expiresAt)
+    },
+    create: {
+      position,
+      active,
+      expiresAt: new Date(expiresAt)
+    }
   })
-  return NextResponse.json(starState)
+  
+  return NextResponse.json(star)
 }

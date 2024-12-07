@@ -15,8 +15,10 @@ model OTPCode {
   expiresAt DateTime
 }
 
-model StarState {
+model Star {
   id          String   @id @default(cuid())
-  activeStars Int      @default(9)
+  position    Int      @unique
+  active      Boolean  @default(true)
+  expiresAt   DateTime
   updatedAt   DateTime @updatedAt
 }
