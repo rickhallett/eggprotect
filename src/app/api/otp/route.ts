@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     if (action === 'gen') {
       // Generate new code
       const code = Math.random().toString().slice(2, 8);
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
 
       const otpCode = await prisma.oTPCode.create({
         data: {

@@ -74,7 +74,7 @@ const StarChart = () => {
         active: true,
         expiresAt: expiresAt
       };
-      
+
       // Update the cached data immediately
       lastStarDataRef.current = {
         position: firstInactiveIndex,
@@ -91,7 +91,7 @@ const StarChart = () => {
   useEffect(() => {
     if (stars.some(Boolean)) {
       // Animation timer - runs frequently but uses cached data
-      const animationTimer = setInterval(() => {
+      const animationTimer = setInterval(async () => {
         const now = Date.now();
         const lastActiveIndex = stars.lastIndexOf(true);
 
@@ -106,14 +106,14 @@ const StarChart = () => {
             setStars(newStars);
 
             const newExpiresAt = new Date(now);
-            
+
             // Update both pending state and cached data for the deactivating star
             pendingStateUpdateRef.current = {
               position: lastActiveIndex,
               active: false,
               expiresAt: newExpiresAt
             };
-            
+
             // Find the new last active star
             const newLastActiveIndex = newStars.lastIndexOf(true);
             if (newLastActiveIndex !== -1) {
@@ -127,7 +127,7 @@ const StarChart = () => {
             } else {
               lastStarDataRef.current = null;
             }
-            
+
             updateStarAPI();
             setLastStarProgress(100);
           }
