@@ -23,6 +23,11 @@ const StarChart = () => {
     active: boolean;
     expiresAt: Date;
   } | null>(null);
+  const lastStarDataRef = useRef<{
+    position: number;
+    active: boolean;
+    expiresAt: string;
+  } | null>(null);
 
   // Fetch initial star state
   useEffect(() => {
@@ -75,43 +80,52 @@ const StarChart = () => {
 
   useEffect(() => {
     if (stars.some(Boolean)) {
-      const timer = setInterval(async () => {
+      // Animation timer - runs frequently but uses cached data
+      const animationTimer = setInterval(() => {
         const now = Date.now();
         const lastActiveIndex = stars.lastIndexOf(true);
 
-        if (lastActiveIndex !== -1) {
-          const response = await fetch('/api/stars');
-          const data = await response.json();
-          const star = data.find((s: { position: number }) => s.position === lastActiveIndex);
+        if (lastActiveIndex !== -1 && lastStarDataRef.current?.position === lastActiveIndex) {
+          const timeLeft = new Date(lastStarDataRef.current.expiresAt).getTime() - now;
+          const progress = (timeLeft / DECAY_TIME) * 100;
+          setLastStarProgress(Math.max(0, progress));
 
-          if (star) {
-            const timeLeft = new Date(star.expiresAt).getTime() - now;
-            const progress = (timeLeft / DECAY_TIME) * 100;
-            setLastStarProgress(Math.max(0, progress));
+          if (progress <= 0) {
+            const newStars = [...stars];
+            newStars[lastActiveIndex] = false;
+            setStars(newStars);
 
-            if (progress <= 0) {
-              const newStars = [...stars];
-              newStars[lastActiveIndex] = false;
-              setStars(newStars);
+            pendingStateUpdateRef.current = {
+              position: lastActiveIndex,
+              active: false,
+              expiresAt: new Date(now)
+            };
+            updateStarAPI();
 
-              pendingStateUpdateRef.current = {
-                position: lastActiveIndex,
-                active: false,
-                expiresAt: new Date(now)
-              };
-              updateStarAPI();
-
-              setLastStarProgress(100);
-            }
+            setLastStarProgress(100);
           }
         }
       }, UPDATE_INTERVAL);
+
+      // Data fetch timer - runs less frequently
+      const fetchTimer = setInterval(async () => {
+        const response = await fetch('/api/stars');
+        const data = await response.json();
+        const lastActiveIndex = stars.lastIndexOf(true);
+        const star = data.find((s: { position: number }) => s.position === lastActiveIndex);
+        if (star) {
+          lastStarDataRef.current = star;
+        }
+      }, API_THROTTLE);
 
       if (stars.some(star => !star)) {
         setActiveOTP(true);
       }
 
-      return () => clearInterval(timer);
+      return () => {
+        clearInterval(animationTimer);
+        clearInterval(fetchTimer);
+      };
     }
   }, [DECAY_TIME, UPDATE_INTERVAL, stars]);
 
