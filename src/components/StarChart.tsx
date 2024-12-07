@@ -15,16 +15,17 @@ const StarChart = () => {
     starDuration: 3000,
     cooldownPeriod: 1000
   });
+  console.log(stars)
   const progress = useStarAnimation(stars);
   const [showOTP, setShowOTP] = useState(false);
 
   const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
   const lastActiveStar = useMemo(() => stars.findIndex(star => star.active), [stars]);
-  const currentProgress = useMemo(() => 
+  const currentProgress = useMemo(() =>
     lastActiveStar === -1 ? 0 : (progress[lastActiveStar] || 0),
     [lastActiveStar, progress]
   );
-  
+
   const starStyles = useStarStyles(activeStates, currentProgress);
 
   useEffect(() => {
