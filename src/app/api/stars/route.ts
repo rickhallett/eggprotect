@@ -50,32 +50,28 @@ export async function POST(request: Request) {
   return NextResponse.json(star)
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH() {
   try {
-    // Find all stars ordered by position
     const stars = await prisma.star.findMany({
       orderBy: { position: 'asc' }
     });
 
-    // Find the position of the first inactive star
-    const firstInactivePosition = stars.findIndex(star => !star.active);
-    if (firstInactivePosition === -1) {
-      return NextResponse.json({ message: "All stars are already active" }, { status: 400 });
+    const firstInactive = stars.find(star => !star.active);
+    if (!firstInactive) {
+      return NextResponse.json({ message: "All stars are active" }, { status: 400 });
     }
 
-    // Refresh that star
     const timeUntilExpiry = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
-    const star = await prisma.star.update({
-      where: { position: firstInactivePosition },
+    const updated = await prisma.star.update({
+      where: { position: firstInactive.position },
       data: {
         active: true,
-        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - firstInactivePosition))
+        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - firstInactive.position))
       }
     });
 
-    return NextResponse.json(star);
+    return NextResponse.json(updated);
   } catch (error) {
-    console.error('Error in PATCH /api/stars:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

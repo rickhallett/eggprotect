@@ -1,33 +1,18 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useStarStyles } from '@/lib/utils';
 import StarStats from './StarStats';
 import { OTPForm } from './OPTForm';
+import { useStarSystem } from '@/hooks/useStarSystem';
+import { useStarAnimation } from '@/hooks/useStarAnimation';
 
 const StarChart = () => {
-  const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
-  const UPDATE_INTERVAL = 100; // Fast updates for smooth animation
-  const API_THROTTLE = 3000; // Minimum time between API calls (3 seconds)
-
-  const [stars, setStars] = useState(Array(9).fill(true));
-  const [lastStarProgress, setLastStarProgress] = useState(100);
-  const [activeOTP, setActiveOTP] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const starStyles = useStarStyles(stars, lastStarProgress);
-  const lastRequestTimeRef = useRef(0);
-  const pendingStateUpdateRef = useRef<{
-    position: number;
-    active: boolean;
-    expiresAt: Date;
-  } | null>(null);
-  const lastStarDataRef = useRef<{
-    position: number;
-    active: boolean;
-    expiresAt: string;
-  } | null>(null);
+  const { stars, loading, error, activateNextStar } = useStarSystem();
+  const progress = useStarAnimation(stars);
+  const [showOTP, setShowOTP] = useState(false);
 
   // Fetch initial star state
   useEffect(() => {
