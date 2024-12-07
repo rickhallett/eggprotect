@@ -14,7 +14,35 @@ const StarChart = () => {
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
   const [activeOTP, setActiveOTP] = useState(false);
+  const [loading, setLoading] = useState(true);
   const starStyles = useStarStyles(stars, lastStarProgress);
+
+  // Fetch initial star state
+  useEffect(() => {
+    const fetchStarState = async () => {
+      const response = await fetch('/api/stars');
+      const data = await response.json();
+      const newStars = Array(9).fill(false);
+      for (let i = 0; i < data.activeStars; i++) {
+        newStars[i] = true;
+      }
+      setStars(newStars);
+      setLoading(false);
+    };
+    fetchStarState();
+  }, []);
+
+  // Update star state in database when stars change
+  useEffect(() => {
+    if (!loading) {
+      const activeStarCount = stars.filter(Boolean).length;
+      fetch('/api/stars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activeStars: activeStarCount })
+      });
+    }
+  }, [stars, loading]);
 
   const handleOTPSuccess = () => {
     const inactiveCount = stars.filter(star => !star).length;
@@ -58,8 +86,12 @@ const StarChart = () => {
     }
   }, [DECAY_TIME, UPDATE_INTERVAL, stars]);
 
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
   return (
-    <div className="max-h-screenbg-zinc-900 p-4">
+    <div className="max-h-screen bg-zinc-900 p-4">
       <Card className="max-w-md mx-auto bg-zinc-800 text-zinc">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold text-slate-400">

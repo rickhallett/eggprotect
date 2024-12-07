@@ -14,3 +14,9 @@ model OTPCode {
   createdAt DateTime @default(now())
   expiresAt DateTime
 }
+
+model StarState {
+  id          String   @id @default(cuid())
+  activeStars Int      @default(9)
+  updatedAt   DateTime @updatedAt
+}
