@@ -9,7 +9,8 @@ import { OTPForm } from './OPTForm';
 
 const StarChart = () => {
   const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
-  const UPDATE_INTERVAL = parseInt(process.env.NEXT_PUBLIC_UPDATE_INTERVAL || "1000");
+  const UPDATE_INTERVAL = 100; // Fast updates for smooth animation
+  const API_THROTTLE = 3000; // Minimum time between API calls (3 seconds)
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
@@ -17,6 +18,11 @@ const StarChart = () => {
   const [loading, setLoading] = useState(true);
   const starStyles = useStarStyles(stars, lastStarProgress);
   const lastRequestTimeRef = useRef(0);
+  const pendingStateUpdateRef = useRef<{
+    position: number;
+    active: boolean;
+    expiresAt: Date;
+  } | null>(null);
 
   // Fetch initial star state
   useEffect(() => {
@@ -55,16 +61,12 @@ const StarChart = () => {
       const timeUntilExpiry = DECAY_TIME * (9 - firstInactiveIndex);
       const expiresAt = new Date(Date.now() + timeUntilExpiry);
 
-      // Update the star in the database
-      await fetch('/api/stars', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          position: firstInactiveIndex,
-          active: true,
-          expiresAt: expiresAt
-        })
-      });
+      pendingStateUpdateRef.current = {
+        position: firstInactiveIndex,
+        active: true,
+        expiresAt: expiresAt
+      };
+      updateStarAPI();
 
       setLastStarProgress(100);
     }
@@ -92,20 +94,12 @@ const StarChart = () => {
               newStars[lastActiveIndex] = false;
               setStars(newStars);
 
-              const now = Date.now();
-              console.log(now - lastRequestTimeRef.current)
-              if (now - lastRequestTimeRef.current >= 1000) {
-                await fetch('/api/stars', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    position: lastActiveIndex,
-                    active: false,
-                    expiresAt: new Date(now)
-                  })
-                });
-                lastRequestTimeRef.current = now;
-              }
+              pendingStateUpdateRef.current = {
+                position: lastActiveIndex,
+                active: false,
+                expiresAt: new Date(now)
+              };
+              updateStarAPI();
 
               setLastStarProgress(100);
             }
@@ -120,6 +114,30 @@ const StarChart = () => {
       return () => clearInterval(timer);
     }
   }, [DECAY_TIME, UPDATE_INTERVAL, stars]);
+
+  // Throttled API update function
+  const updateStarAPI = async () => {
+    const now = Date.now();
+    if (pendingStateUpdateRef.current && now - lastRequestTimeRef.current >= API_THROTTLE) {
+      const update = pendingStateUpdateRef.current;
+      await fetch('/api/stars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(update)
+      });
+      lastRequestTimeRef.current = now;
+      pendingStateUpdateRef.current = null;
+    }
+  };
+
+  // Separate effect for handling API updates
+  useEffect(() => {
+    const apiUpdateTimer = setInterval(() => {
+      updateStarAPI();
+    }, API_THROTTLE);
+
+    return () => clearInterval(apiUpdateTimer);
+  }, []);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
