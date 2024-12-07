@@ -49,3 +49,30 @@ export async function POST(request: Request) {
 
   return NextResponse.json(star)
 }
+
+export async function PUT(request: Request) {
+  try {
+    // Reset all stars to active with staggered expiry times
+    const stars = await Promise.all(
+      Array(9).fill(null).map((_, index) => {
+        const timeUntilExpiry = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000") * (9 - index);
+        return prisma.star.upsert({
+          where: { position: index },
+          update: {
+            active: true,
+            expiresAt: new Date(Date.now() + timeUntilExpiry)
+          },
+          create: {
+            position: index,
+            active: true,
+            expiresAt: new Date(Date.now() + timeUntilExpiry)
+          }
+        });
+      })
+    );
+    return NextResponse.json(stars);
+  } catch (error) {
+    console.error('Error in PUT /api/stars:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
