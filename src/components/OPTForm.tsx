@@ -14,24 +14,40 @@ export function OTPForm({ isActive, onSuccess }: OTPFormProps) {
   const { toast } = useToast()
   const [value, setValue] = useState("")
 
-  const handleValueChange = (input: string) => {
+  const handleValueChange = async (input: string) => {
     console.log(input)
     setValue(input)
 
     if (input.length === 6) {
-      // Here you would normally validate against a backend
-      if (input === "123456") {
-        toast({
-          title: "Star restored!",
-          description: "Your star has been reactivated.",
+      try {
+        const response = await fetch('/api/otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: input }),
         })
-        onSuccess()
 
-      } else {
+        const data = await response.json()
+
+        if (response.ok) {
+          toast({
+            title: "Star restored!",
+            description: "Your star has been reactivated.",
+          })
+          onSuccess()
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Invalid code",
+            description: data.error || "Please try again.",
+          })
+        }
+      } catch (error) {
         toast({
           variant: "destructive",
-          title: "Invalid code",
-          description: "Please try again.",
+          title: "Error",
+          description: "Failed to verify code. Please try again.",
         })
       }
       setValue("")
