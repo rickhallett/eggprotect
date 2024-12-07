@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useStarStyles } from '@/lib/utils';
 import StarStats from './StarStats';
-import { OTPProvider } from './OTPProvider';
+import { OTPForm } from './OPTForm';
 
 const StarChart = () => {
   const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
@@ -31,6 +31,7 @@ const StarChart = () => {
   useEffect(() => {
     if (stars.some(Boolean)) {
       const startTime = Date.now();
+      console.log("start timer")
 
       const timer = setInterval(() => {
         const elapsed = Date.now() - startTime;
@@ -49,6 +50,10 @@ const StarChart = () => {
           }
         }
       }, UPDATE_INTERVAL);
+
+      if (stars.some(star => !star)) {
+        setShowOTP(true);
+      }
 
       return () => clearInterval(timer);
     }
@@ -79,13 +84,14 @@ const StarChart = () => {
               </div>
             ))}
           </div>
-          <OTPProvider 
-            isOpen={showOTP}
-            onClose={() => setShowOTP(false)}
-            onSuccess={handleOTPSuccess}
-          />
         </CardContent>
+
       </Card>
+      <OTPForm
+        isOpen={showOTP}
+        onClose={() => setShowOTP(false)}
+        onSuccess={handleOTPSuccess}
+      />
     </div>
   );
 
