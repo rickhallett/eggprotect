@@ -1,39 +1,53 @@
-import { useState, useEffect } from 'react';
-import { Star } from '@/lib/types';
+import { useState, useEffect, useCallback } from 'react';
+import { Star, StarSystemState } from '@/lib/types';
 
-export function useStarSystem() {
-  const [stars, setStars] = useState<Star[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const POLL_INTERVAL = 3000;
 
-  const fetchStars = async () => {
+export function useStarSystem(): StarSystemState & {
+  activateNextStar: () => Promise<Star | undefined>;
+  refreshStars: () => Promise<void>;
+} {
+  const [state, setState] = useState<StarSystemState>({
+    stars: [],
+    loading: true,
+    error: null
+  });
+
+  const fetchStars = useCallback(async () => {
     try {
       const response = await fetch('/api/stars');
+      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      setStars(data);
+      setState(prev => ({ ...prev, stars: data, error: null }));
     } catch (err) {
-      setError('Failed to fetch stars');
+      setState(prev => ({ ...prev, error: 'Failed to fetch stars' }));
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
-  const activateNextStar = async () => {
+  const activateNextStar = useCallback(async () => {
     try {
       const response = await fetch('/api/stars', { method: 'PATCH' });
+      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       await fetchStars();
       return data;
     } catch (err) {
-      setError('Failed to activate star');
+      setState(prev => ({ ...prev, error: 'Failed to activate star' }));
+      return undefined;
     }
-  };
+  }, [fetchStars]);
 
   useEffect(() => {
     fetchStars();
-    const interval = setInterval(fetchStars, 3000);
+    const interval = setInterval(fetchStars, POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStars]);
 
-  return { stars, loading, error, activateNextStar, refreshStars: fetchStars };
+  return { 
+    ...state, 
+    activateNextStar, 
+    refreshStars: fetchStars 
+  };
 }

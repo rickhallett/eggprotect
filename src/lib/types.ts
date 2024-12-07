@@ -3,3 +3,9 @@ export interface Star {
   active: boolean;
   expiresAt: string;
 }
+
+export interface StarSystemState {
+  stars: Star[];
+  loading: boolean;
+  error: string | null;
+}

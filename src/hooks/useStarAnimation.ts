@@ -1,26 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Star } from '@/lib/types';
 
+const ANIMATION_INTERVAL = 100; // 10fps for smooth animation
+const DEFAULT_DECAY_TIME = 3000;
+
 export function useStarAnimation(stars: Star[]) {
-  const DECAY_TIME = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
+  const decayTime = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || String(DEFAULT_DECAY_TIME));
   const [progress, setProgress] = useState<number[]>(Array(9).fill(100));
 
-  useEffect(() => {
-    const calculateProgress = () => {
-      const now = Date.now();
-      return stars.map(star => {
-        if (!star.active) return 0;
-        const timeLeft = new Date(star.expiresAt).getTime() - now;
-        return Math.max(0, (timeLeft / DECAY_TIME) * 100);
-      });
-    };
+  const calculateProgress = useCallback(() => {
+    const now = Date.now();
+    return stars.map(star => {
+      if (!star.active) return 0;
+      const expiryTime = new Date(star.expiresAt).getTime();
+      const timeLeft = expiryTime - now;
+      return Math.max(0, Math.min(100, (timeLeft / decayTime) * 100));
+    });
+  }, [stars, decayTime]);
 
+  useEffect(() => {
+    setProgress(calculateProgress()); // Initial calculation
+    
     const interval = setInterval(() => {
       setProgress(calculateProgress());
-    }, 100);
+    }, ANIMATION_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [stars, DECAY_TIME]);
+  }, [calculateProgress]);
 
   return progress;
 }
