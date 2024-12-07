@@ -57,8 +57,8 @@ export async function PATCH(request: Request) {
       orderBy: { position: 'asc' }
     });
     
-    // Find the position of the last inactive star
-    const lastInactivePosition = stars.findIndex(star => !star.active);
+    // Find the position of the last inactive star (searching from the end)
+    const lastInactivePosition = stars.map(star => star.active).lastIndexOf(false);
     if (lastInactivePosition === -1) {
       return NextResponse.json({ message: "All stars are already active" }, { status: 400 });
     }
