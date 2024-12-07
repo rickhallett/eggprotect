@@ -19,13 +19,9 @@ const StarChart = () => {
     [stars]
   );
 
-  const starStyles = useMemo(() => 
-    useStarStyles(
-      stars.map(star => star.active),
-      progress[lastActiveStar]
-    ),
-    [stars, progress, lastActiveStar]
-  );
+  const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
+  const currentProgress = useMemo(() => progress[lastActiveStar], [progress, lastActiveStar]);
+  const starStyles = useStarStyles(activeStates, currentProgress);
 
   useEffect(() => {
     setShowOTP(stars.some(star => !star.active));
