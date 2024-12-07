@@ -2,18 +2,30 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const starState = await prisma.starState.findFirst()
-  if (!starState) {
-    // Create initial state if none exists
-    const initialState = await prisma.starState.create({
-      data: {
-        id: '1',
-        activeStars: 9
+  try {
+    const starState = await prisma.starState.findFirst({
+      select: {
+        id: true,
+        activeStars: true,
+        updatedAt: true
       }
     })
-    return NextResponse.json(initialState)
+    
+    if (!starState) {
+      // Create initial state if none exists
+      const initialState = await prisma.starState.create({
+        data: {
+          id: '1',
+          activeStars: 9
+        }
+      })
+      return NextResponse.json(initialState)
+    }
+    return NextResponse.json(starState)
+  } catch (error) {
+    console.error('Error in GET /api/stars:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
-  return NextResponse.json(starState)
 }
 
 export async function POST(request: Request) {
