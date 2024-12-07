@@ -13,7 +13,7 @@ const StarChart = () => {
 
   const [stars, setStars] = useState(Array(9).fill(true));
   const [lastStarProgress, setLastStarProgress] = useState(100);
-  const [showOTP, setShowOTP] = useState(false);
+  const [activeOTP, setActiveOTP] = useState(false);
   const starStyles = useStarStyles(stars, lastStarProgress);
 
   const handleOTPSuccess = () => {
@@ -25,13 +25,12 @@ const StarChart = () => {
       setStars(newStars);
       setLastStarProgress(100);
     }
-    setShowOTP(false);
+    setActiveOTP(false);
   };
 
   useEffect(() => {
     if (stars.some(Boolean)) {
       const startTime = Date.now();
-      console.log("start timer")
 
       const timer = setInterval(() => {
         const elapsed = Date.now() - startTime;
@@ -52,14 +51,12 @@ const StarChart = () => {
       }, UPDATE_INTERVAL);
 
       if (stars.some(star => !star)) {
-        setShowOTP(true);
+        setActiveOTP(true);
       }
 
       return () => clearInterval(timer);
     }
   }, [DECAY_TIME, UPDATE_INTERVAL, stars]);
-
-
 
   return (
     <div className="max-h-screenbg-zinc-900 p-4">
@@ -73,7 +70,6 @@ const StarChart = () => {
           <div className="mb-6">
             <StarStats stars={stars} lastStarProgress={lastStarProgress} decayTime={DECAY_TIME} />
           </div>
-
           <div className="grid grid-cols-3 gap-6 p-4">
             {stars.map((_, index) => (
               <div key={index} className="flex justify-center">
@@ -85,11 +81,9 @@ const StarChart = () => {
             ))}
           </div>
         </CardContent>
-
       </Card>
       <OTPForm
-        isOpen={showOTP}
-        onClose={() => setShowOTP(false)}
+        isActive={activeOTP}
         onSuccess={handleOTPSuccess}
       />
     </div>
