@@ -56,7 +56,7 @@ const StarChart = () => {
           <div className="mb-6">
             <StarStats 
               stars={stars.map(star => star.active)} 
-              lastStarProgress={progress[lastActiveStar]} 
+              lastStarProgress={currentProgress} 
               decayTime={parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000")} 
             />
           </div>
