@@ -21,21 +21,21 @@ export function useStarAnimation(stars: Star[]) {
     });
   }, [stars, decayTime]);
 
-  // Ensure initial calculation happens immediately
   useEffect(() => {
-    const initialProgress = calculateProgress();
-    setProgress(initialProgress);
-  }, [stars, calculateProgress]);
-
-  useEffect(() => {
-    setProgress(calculateProgress()); // Initial calculation
+    const updateProgress = () => {
+      const newProgress = calculateProgress();
+      setProgress(newProgress);
+    };
     
-    const interval = setInterval(() => {
-      setProgress(calculateProgress());
-    }, ANIMATION_INTERVAL);
+    // Initial calculation
+    updateProgress();
+    
+    // Set up interval for updates
+    const interval = setInterval(updateProgress, ANIMATION_INTERVAL);
 
+    // Cleanup
     return () => clearInterval(interval);
-  }, [calculateProgress]);
+  }, [calculateProgress]); // Only depend on calculateProgress
 
   return progress;
 }
