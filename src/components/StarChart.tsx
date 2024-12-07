@@ -55,9 +55,10 @@ const StarChart = () => {
         <CardContent>
           <div className="mb-6">
             <StarStats 
-              stars={stars.map(star => star.active)} 
-              lastStarProgress={currentProgress} 
-              decayTime={parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000")} 
+              stars={stars.map(star => star.active)}
+              lastStarProgress={currentProgress}
+              decayTime={parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000")}
+              expiryTime={stars[lastActiveStar]?.expiresAt}
             />
           </div>
           <div className="grid grid-cols-3 gap-6 p-4">

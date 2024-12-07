@@ -10,14 +10,23 @@ export function useStarAnimation(stars: Star[]) {
 
   const calculateProgress = useCallback(() => {
     const now = Date.now();
-    return stars.map((star, index) => {
+    return stars.map((star) => {
       if (!star.active) return 0;
+      
       const expiryTime = new Date(star.expiresAt).getTime();
+      const totalDuration = expiryTime - (now - decayTime); // Calculate total duration
       const timeLeft = expiryTime - now;
-      // Use base decay time for progress calculation
+      
+      // Calculate progress based on actual time remaining vs total duration
       return Math.max(0, Math.min(100, (timeLeft / decayTime) * 100));
     });
   }, [stars, decayTime]);
+
+  // Ensure initial calculation happens immediately
+  useEffect(() => {
+    const initialProgress = calculateProgress();
+    setProgress(initialProgress);
+  }, [stars, calculateProgress]);
 
   useEffect(() => {
     setProgress(calculateProgress()); // Initial calculation
