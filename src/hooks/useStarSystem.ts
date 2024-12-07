@@ -13,7 +13,7 @@ export function useStarSystem(config: StarSystemConfig) {
       ...star,
       active: star.active && new Date(star.expiresAt).getTime() > now
     }));
-  }, [stars]);
+  }, []); // Remove stars dependency since we access it from closure
 
   useEffect(() => {
     const initializeStars = async () => {

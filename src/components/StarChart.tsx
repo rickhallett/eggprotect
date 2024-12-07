@@ -18,22 +18,26 @@ const StarChart = () => {
   const progress = useStarAnimation(stars);
   const [showOTP, setShowOTP] = useState(false);
 
-  const lastActiveStar = useMemo(() =>
-    stars.findIndex(star => star.active),
-    [stars]
-  );
+  const memoizedValues = useMemo(() => {
+    const activeStates = stars.map(star => star.active);
+    const lastActiveStar = stars.findIndex(star => star.active);
+    const currentProgress = lastActiveStar === -1 ? 0 : (progress[lastActiveStar] || 0);
+    return {
+      activeStates,
+      lastActiveStar,
+      currentProgress,
+      starStyles: useStarStyles(activeStates, currentProgress)
+    };
+  }, [stars, progress]);
 
-  const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
-  const currentProgress = useMemo(() => {
-    if (lastActiveStar === -1) return 0;
-    return progress[lastActiveStar] || 0;
-  }, [progress, lastActiveStar]);
-
-  const starStyles = useStarStyles(activeStates, currentProgress);
+  const { activeStates, lastActiveStar, currentProgress, starStyles } = memoizedValues;
 
   useEffect(() => {
-    setShowOTP(stars.some(star => !star.active));
-  }, [stars]);
+    const hasInactiveStars = stars.some(star => !star.active);
+    if (showOTP !== hasInactiveStars) {
+      setShowOTP(hasInactiveStars);
+    }
+  }, [stars, showOTP]);
 
   const handleOTPSuccess = async () => {
     await activateNextStar();
