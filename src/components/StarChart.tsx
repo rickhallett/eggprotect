@@ -10,7 +10,7 @@ import { useStarSystem } from '@/hooks/useStarSystem';
 import { useStarAnimation } from '@/hooks/useStarAnimation';
 
 const StarChart = () => {
-  const { stars, activateNextStar, isInitialized } = useStarSystem({
+  const { stars, activateNextStar, isInitialized, loading, error } = useStarSystem({
     totalStars: 9,
     starDuration: 3000,
     cooldownPeriod: 1000

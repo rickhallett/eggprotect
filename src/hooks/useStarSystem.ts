@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Star, StarSystemConfig, StarSystemState } from '@/lib/types';
 
-export function useStarSystem(config: StarSystemConfig): StarSystemState & {
-  activateNextStar: () => Promise<Star | undefined>;
-} {
+export function useStarSystem(config: StarSystemConfig) {
   const [stars, setStars] = useState<Star[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const computeCurrentState = useCallback(() => {
     const now = new Date().getTime();
@@ -17,11 +17,19 @@ export function useStarSystem(config: StarSystemConfig): StarSystemState & {
 
   useEffect(() => {
     const initializeStars = async () => {
-      const response = await fetch('/api/stars');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      setStars(data);
-      setIsInitialized(true);
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch('/api/stars');
+        if (!response.ok) throw new Error('Failed to fetch stars');
+        const data = await response.json();
+        setStars(data);
+        setIsInitialized(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
     };
     initializeStars();
   }, []);
@@ -78,6 +86,8 @@ export function useStarSystem(config: StarSystemConfig): StarSystemState & {
   return {
     stars: computeCurrentState(),
     isInitialized,
-    activateNextStar
+    activateNextStar,
+    loading,
+    error
   };
 }
