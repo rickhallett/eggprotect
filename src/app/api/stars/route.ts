@@ -50,6 +50,26 @@ export async function POST(request: Request) {
   return NextResponse.json(star)
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const { position } = await request.json()
+    
+    // Refresh single star
+    const timeUntilExpiry = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
+    const star = await prisma.star.update({
+      where: { position },
+      data: {
+        active: true,
+        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - position))
+      }
+    });
+    return NextResponse.json(star);
+  } catch (error) {
+    console.error('Error in PATCH /api/stars:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request) {
   try {
     // Reset all stars to active with staggered expiry times
