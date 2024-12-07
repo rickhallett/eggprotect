@@ -52,17 +52,27 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { position } = await request.json()
+    // Find all stars ordered by position
+    const stars = await prisma.star.findMany({
+      orderBy: { position: 'asc' }
+    });
     
-    // Refresh single star
+    // Find the position of the last inactive star
+    const lastInactivePosition = stars.findIndex(star => !star.active);
+    if (lastInactivePosition === -1) {
+      return NextResponse.json({ message: "All stars are already active" }, { status: 400 });
+    }
+
+    // Refresh that star
     const timeUntilExpiry = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
     const star = await prisma.star.update({
-      where: { position },
+      where: { position: lastInactivePosition },
       data: {
         active: true,
-        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - position))
+        expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - lastInactivePosition))
       }
     });
+    
     return NextResponse.json(star);
   } catch (error) {
     console.error('Error in PATCH /api/stars:', error);
