@@ -24,7 +24,7 @@ export default function StarStats({ stars, lastStarProgress, decayTime, expiryTi
   const getRemainingTime = () => {
     if (!expiryTime) return 0;
     const timeLeft = new Date(expiryTime).getTime() - Date.now();
-    return Math.max(0, timeLeft);
+    return Math.max(0, Math.min(timeLeft, decayTime));
   };
 
   return (
