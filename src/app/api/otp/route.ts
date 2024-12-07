@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 
     } else {
       return NextResponse.json(
-        { error: 'Invalid action parameter. Use "gen" or "list".' },
+        { error: 'Invalid action' },
         { status: 400 }
       );
     }

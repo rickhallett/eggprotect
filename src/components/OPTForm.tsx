@@ -15,7 +15,6 @@ export function OTPForm({ isActive, onSuccess }: OTPFormProps) {
   const [value, setValue] = useState("")
 
   const handleValueChange = async (input: string) => {
-    console.log(input)
     setValue(input)
 
     if (input.length === 6) {
@@ -29,6 +28,8 @@ export function OTPForm({ isActive, onSuccess }: OTPFormProps) {
         })
 
         const data = await response.json()
+
+        console.log(data)
 
         if (response.ok) {
           toast({
@@ -49,6 +50,7 @@ export function OTPForm({ isActive, onSuccess }: OTPFormProps) {
           title: "Error",
           description: "Failed to verify code. Please try again.",
         })
+        console.error(error)
       }
       setValue("")
     }
