@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useStarStyles } from '@/lib/utils';
@@ -14,7 +14,19 @@ const StarChart = () => {
   const progress = useStarAnimation(stars);
   const [showOTP, setShowOTP] = useState(false);
 
-  // Update OTP visibility when stars change
+  const lastActiveStar = useMemo(() => 
+    stars.findIndex(star => star.active), 
+    [stars]
+  );
+
+  const starStyles = useMemo(() => 
+    useStarStyles(
+      stars.map(star => star.active),
+      progress[lastActiveStar]
+    ),
+    [stars, progress, lastActiveStar]
+  );
+
   useEffect(() => {
     setShowOTP(stars.some(star => !star.active));
   }, [stars]);
@@ -31,12 +43,6 @@ const StarChart = () => {
   if (error) {
     return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
   }
-
-  const lastActiveStar = stars.findIndex(star => star.active);
-  const starStyles = useStarStyles(
-    stars.map(star => star.active),
-    progress[lastActiveStar]
-  );
 
   return (
     <div className="max-h-screen bg-zinc-900 p-4">
