@@ -57,16 +57,16 @@ export async function PATCH(request: Request) {
       orderBy: { position: 'asc' }
     });
     
-    // Find the position of the last inactive star (searching from the end)
-    const lastInactivePosition = stars.map(star => star.active).lastIndexOf(false);
-    if (lastInactivePosition === -1) {
+    // Find the position of the first inactive star
+    const firstInactivePosition = stars.findIndex(star => !star.active);
+    if (firstInactivePosition === -1) {
       return NextResponse.json({ message: "All stars are already active" }, { status: 400 });
     }
 
     // Refresh that star
     const timeUntilExpiry = parseInt(process.env.NEXT_PUBLIC_DECAY_TIME || "3000");
     const star = await prisma.star.update({
-      where: { position: lastInactivePosition },
+      where: { position: firstInactivePosition },
       data: {
         active: true,
         expiresAt: new Date(Date.now() + timeUntilExpiry * (9 - lastInactivePosition))
