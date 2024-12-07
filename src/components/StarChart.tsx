@@ -107,19 +107,26 @@ const StarChart = () => {
 
             const newExpiresAt = new Date(now);
             
-            // Update both pending state and cached data
+            // Update both pending state and cached data for the deactivating star
             pendingStateUpdateRef.current = {
               position: lastActiveIndex,
               active: false,
               expiresAt: newExpiresAt
             };
             
-            // Update cached data immediately
-            lastStarDataRef.current = {
-              position: lastActiveIndex,
-              active: false,
-              expiresAt: newExpiresAt.toISOString()
-            };
+            // Find the new last active star
+            const newLastActiveIndex = newStars.lastIndexOf(true);
+            if (newLastActiveIndex !== -1) {
+              // Fetch and update cache for the new last active star
+              const response = await fetch('/api/stars');
+              const data = await response.json();
+              const newLastStar = data.find((s: { position: number }) => s.position === newLastActiveIndex);
+              if (newLastStar) {
+                lastStarDataRef.current = newLastStar;
+              }
+            } else {
+              lastStarDataRef.current = null;
+            }
             
             updateStarAPI();
             setLastStarProgress(100);
