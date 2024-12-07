@@ -3,7 +3,17 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   const starState = await prisma.starState.findFirst()
-  return NextResponse.json(starState || { activeStars: 9 })
+  if (!starState) {
+    // Create initial state if none exists
+    const initialState = await prisma.starState.create({
+      data: {
+        id: '1',
+        activeStars: 9
+      }
+    })
+    return NextResponse.json(initialState)
+  }
+  return NextResponse.json(starState)
 }
 
 export async function POST(request: Request) {
