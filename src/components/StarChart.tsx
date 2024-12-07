@@ -23,34 +23,48 @@ const StarChart = () => {
       const response = await fetch('/api/stars');
       const data = await response.json();
       const newStars = Array(9).fill(false);
-      for (let i = 0; i < data.activeStars; i++) {
-        newStars[i] = true;
-      }
+      const now = Date.now();
+      
+      data.forEach((star: { position: number, active: boolean, expiresAt: string }) => {
+        newStars[star.position] = star.active;
+        if (star.active) {
+          const timeLeft = new Date(star.expiresAt).getTime() - now;
+          const progress = (timeLeft / DECAY_TIME) * 100;
+          if (star.position === newStars.lastIndexOf(true)) {
+            setLastStarProgress(Math.max(0, progress));
+          }
+        }
+      });
+      
       setStars(newStars);
       setLoading(false);
     };
     fetchStarState();
-  }, []);
+  }, [DECAY_TIME]);
 
-  // Update star state in database when stars change
-  useEffect(() => {
-    if (!loading) {
-      const activeStarCount = stars.filter(Boolean).length;
-      fetch('/api/stars', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ activeStars: activeStarCount })
-      });
-    }
-  }, [stars, loading]);
-
-  const handleOTPSuccess = () => {
+  const handleOTPSuccess = async () => {
     const inactiveCount = stars.filter(star => !star).length;
     if (inactiveCount > 0) {
       const newStars = [...stars];
       const firstInactiveIndex = newStars.indexOf(false);
       newStars[firstInactiveIndex] = true;
       setStars(newStars);
+      
+      // Calculate new expiry time based on position
+      const timeUntilExpiry = DECAY_TIME * (9 - firstInactiveIndex);
+      const expiresAt = new Date(Date.now() + timeUntilExpiry);
+      
+      // Update the star in the database
+      await fetch('/api/stars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          position: firstInactiveIndex,
+          active: true,
+          expiresAt: expiresAt
+        })
+      });
+      
       setLastStarProgress(100);
     }
     setActiveOTP(false);
@@ -58,22 +72,38 @@ const StarChart = () => {
 
   useEffect(() => {
     if (stars.some(Boolean)) {
-      const startTime = Date.now();
+      const timer = setInterval(async () => {
+        const now = Date.now();
+        const lastActiveIndex = stars.lastIndexOf(true);
+        
+        if (lastActiveIndex !== -1) {
+          const response = await fetch('/api/stars');
+          const data = await response.json();
+          const star = data.find((s: { position: number }) => s.position === lastActiveIndex);
+          
+          if (star) {
+            const timeLeft = new Date(star.expiresAt).getTime() - now;
+            const progress = (timeLeft / DECAY_TIME) * 100;
+            setLastStarProgress(Math.max(0, progress));
 
-      const timer = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, DECAY_TIME - elapsed);
-        const progress = (remaining / DECAY_TIME) * 100;
-
-        setLastStarProgress(progress);
-
-        if (progress === 0) {
-          const lastActiveIndex = stars.lastIndexOf(true);
-          if (lastActiveIndex !== -1) {
-            const newStars = [...stars];
-            newStars[lastActiveIndex] = false;
-            setStars(newStars);
-            setLastStarProgress(100);
+            if (progress <= 0) {
+              const newStars = [...stars];
+              newStars[lastActiveIndex] = false;
+              setStars(newStars);
+              
+              // Update the star in the database
+              await fetch('/api/stars', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  position: lastActiveIndex,
+                  active: false,
+                  expiresAt: new Date(now)
+                })
+              });
+              
+              setLastStarProgress(100);
+            }
           }
         }
       }, UPDATE_INTERVAL);
