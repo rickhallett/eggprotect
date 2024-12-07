@@ -7,7 +7,21 @@ export async function GET() {
       orderBy: { position: 'asc' }
     })
 
-    if (stars.length === 0) {
+    // Update expired stars
+    const now = Date.now();
+    const updatedStars = await Promise.all(
+      stars.map(async (star) => {
+        if (star.active && new Date(star.expiresAt).getTime() <= now) {
+          return prisma.star.update({
+            where: { position: star.position },
+            data: { active: false }
+          });
+        }
+        return star;
+      })
+    );
+
+    if (updatedStars.length === 0) {
       // Create initial state if none exists
       const initialStars = await Promise.all(
         Array(9).fill(null).map((_, index) => {
