@@ -6,7 +6,7 @@ export async function GET() {
     const stars = await prisma.star.findMany({
       orderBy: { position: 'asc' }
     })
-    
+
     if (stars.length === 0) {
       // Create initial state if none exists
       const initialStars = await Promise.all(
@@ -33,10 +33,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const { position, active, expiresAt } = await request.json()
-  
+
   const star = await prisma.star.upsert({
     where: { position },
-    update: { 
+    update: {
       active,
       expiresAt: new Date(expiresAt)
     },
@@ -46,6 +46,6 @@ export async function POST(request: Request) {
       expiresAt: new Date(expiresAt)
     }
   })
-  
+
   return NextResponse.json(star)
 }
