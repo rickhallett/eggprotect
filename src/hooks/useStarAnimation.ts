@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Star } from '@/lib/types';
 
-const ANIMATION_INTERVAL = 100; // 10fps for smooth animation
+const ANIMATION_INTERVAL = 250; // 4fps is enough for countdown animation
 const DEFAULT_DECAY_TIME = 3000;
 
 export function useStarAnimation(stars: Star[]) {

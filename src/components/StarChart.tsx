@@ -15,29 +15,23 @@ const StarChart = () => {
     starDuration: 3000,
     cooldownPeriod: 1000
   });
-  console.log(stars)
   const progress = useStarAnimation(stars);
-  const [showOTP, setShowOTP] = useState(false);
-
+  
+  // Memoize all derived state
   const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
-  const lastActiveStar = useMemo(() => stars.findIndex(star => star.active), [stars]);
+  const lastActiveStar = useMemo(() => activeStates.findIndex(active => active), [activeStates]);
   const currentProgress = useMemo(() =>
     lastActiveStar === -1 ? 0 : (progress[lastActiveStar] || 0),
     [lastActiveStar, progress]
   );
-
   const starStyles = useStarStyles(activeStates, currentProgress);
-
-  useEffect(() => {
-    const hasInactiveStars = stars.some(star => !star.active);
-    if (showOTP !== hasInactiveStars) {
-      setShowOTP(hasInactiveStars);
-    }
-  }, [stars, showOTP]);
+  const hasInactiveStars = useMemo(() => activeStates.some(active => !active), [activeStates]);
+  
+  // Use hasInactiveStars directly instead of managing separate state
+  const showOTP = hasInactiveStars;
 
   const handleOTPSuccess = async () => {
     await activateNextStar();
-    setShowOTP(false);
   };
 
   if (loading) {
