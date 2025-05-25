@@ -16,7 +16,7 @@ const StarChart = () => {
     cooldownPeriod: 1000
   });
   const progress = useStarAnimation(stars);
-  
+
   // Memoize all derived state
   const activeStates = useMemo(() => stars.map(star => star.active), [stars]);
   const lastActiveStar = useMemo(() => activeStates.findIndex(active => active), [activeStates]);
@@ -26,7 +26,7 @@ const StarChart = () => {
   );
   const starStyles = useStarStyles(activeStates, currentProgress);
   const hasInactiveStars = useMemo(() => activeStates.some(active => !active), [activeStates]);
-  
+
   // Use hasInactiveStars directly instead of managing separate state
   const showOTP = hasInactiveStars;
 
